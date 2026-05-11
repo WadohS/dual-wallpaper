@@ -47,6 +47,7 @@ Terminal=false
 Type=Application
 Categories=Utility;GNOME;
 Actions=Apply;Restart;EditConfig;
+NoDisplay=true
 
 [Desktop Action Apply]
 Name=Apply now
