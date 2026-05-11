@@ -42,3 +42,5 @@ Key settings:
 ## Installation
 
 Use `install.sh` to install the script and service locally.
+
+After installation, launch `Dual Wallpaper` from the applications menu to edit the configuration.
