@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="url(#bg)"/>
+  <rect x="18" y="26" width="44" height="32" rx="6" fill="#0f172a" opacity="0.95"/>
+  <rect x="66" y="26" width="44" height="32" rx="6" fill="#0f172a" opacity="0.95"/>
+  <rect x="22" y="30" width="36" height="24" rx="4" fill="#111827"/>
+  <rect x="70" y="30" width="36" height="24" rx="4" fill="#111827"/>
+  <path d="M40 42a8 8 0 1 1 .01 0" fill="none" stroke="#f8fafc" stroke-width="3" stroke-linecap="round"/>
+  <path d="M40 42v-4" stroke="#f8fafc" stroke-width="3" stroke-linecap="round"/>
+  <path d="M40 42l4 2" stroke="#f8fafc" stroke-width="3" stroke-linecap="round"/>
+  <path d="M72 50l10-10 7 7 8-9 9 12z" fill="none" stroke="#f8fafc" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="28" y="72" width="72" height="12" rx="6" fill="#f8fafc" opacity="0.96"/>
+  <rect x="36" y="90" width="56" height="8" rx="4" fill="#dbeafe" opacity="0.96"/>
+</svg>
