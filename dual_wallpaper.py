@@ -67,10 +67,17 @@ def default_config() -> dict:
         'secondary_folder': str(folder),
         'different_images': True,
         'recursive': False,
-        'interval_seconds': interval,
+        'interval_minutes': max(1, interval // 60),
         'output_file': str(OUTPUT_PATH),
         'fill_color': 'black',
     }
+
+
+def normalize_config(config: dict) -> dict:
+    if 'interval_minutes' not in config:
+        seconds = int(config.pop('interval_seconds', 1200))
+        config['interval_minutes'] = max(1, seconds // 60)
+    return config
 
 
 def ensure_config() -> dict:
@@ -82,7 +89,10 @@ def ensure_config() -> dict:
         CONFIG_PATH.write_text(json.dumps(cfg, indent=2), encoding='utf-8')
         return cfg
 
-    return json.loads(CONFIG_PATH.read_text(encoding='utf-8'))
+    config = json.loads(CONFIG_PATH.read_text(encoding='utf-8'))
+    config = normalize_config(config)
+    CONFIG_PATH.write_text(json.dumps(config, indent=2), encoding='utf-8')
+    return config
 
 
 def load_state() -> dict:
@@ -94,6 +104,55 @@ def load_state() -> dict:
 def save_state(state: dict) -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     STATE_PATH.write_text(json.dumps(state, indent=2), encoding='utf-8')
+
+
+def pair_dict(primary: Path, secondary: Path) -> dict[str, str]:
+    return {
+        'primary': str(primary),
+        'secondary': str(secondary),
+    }
+
+
+def pair_from_state(state: dict) -> tuple[Path, Path] | None:
+    primary = state.get('current_primary')
+    secondary = state.get('current_secondary')
+    if not primary or not secondary:
+        return None
+    return Path(primary), Path(secondary)
+
+
+def push_history(state: dict, primary: Path, secondary: Path) -> None:
+    entry = pair_dict(primary, secondary)
+    history = list(state.get('history', []))
+    index = int(state.get('history_index', len(history) - 1))
+
+    if index < len(history) - 1:
+        history = history[: index + 1]
+
+    if not history or history[-1] != entry:
+        history.append(entry)
+
+    state['history'] = history
+    state['history_index'] = len(history) - 1
+    state['current_primary'] = entry['primary']
+    state['current_secondary'] = entry['secondary']
+
+
+def move_history(state: dict, direction: int) -> tuple[Path, Path] | None:
+    history = list(state.get('history', []))
+    if not history:
+        return None
+
+    index = int(state.get('history_index', len(history) - 1))
+    new_index = index + direction
+    if new_index < 0 or new_index >= len(history):
+        return None
+
+    entry = history[new_index]
+    state['history_index'] = new_index
+    state['current_primary'] = entry['primary']
+    state['current_secondary'] = entry['secondary']
+    return Path(entry['primary']), Path(entry['secondary'])
 
 
 def list_images(folder: Path, recursive: bool) -> list[Path]:
@@ -221,18 +280,40 @@ def next_pair(config: dict, state: dict) -> tuple[Path, Path]:
     return primary, secondary
 
 
-def apply(config: dict, refresh: bool = False) -> None:
+def apply(config: dict, refresh: bool = False, previous: bool = False, next_history: bool = False) -> None:
     state = load_state()
     output_file = Path(config.get('output_file', str(OUTPUT_PATH))).expanduser()
 
-    if refresh and state.get('current_primary') and state.get('current_secondary'):
-        primary = Path(state['current_primary'])
-        secondary = Path(state['current_secondary'])
+    if previous:
+        pair = move_history(state, -1)
+        if pair is None:
+            pair = pair_from_state(state)
+        if pair is None:
+            primary, secondary = next_pair(config, state)
+            push_history(state, primary, secondary)
+        else:
+            primary, secondary = pair
+            save_state(state)
+    elif next_history:
+        pair = move_history(state, 1)
+        if pair is None:
+            primary, secondary = next_pair(config, state)
+            push_history(state, primary, secondary)
+        else:
+            primary, secondary = pair
+            save_state(state)
+    elif refresh:
+        pair = pair_from_state(state)
+        if pair is None:
+            primary, secondary = next_pair(config, state)
+            push_history(state, primary, secondary)
+        else:
+            primary, secondary = pair
     else:
         primary, secondary = next_pair(config, state)
-        state['current_primary'] = str(primary)
-        state['current_secondary'] = str(secondary)
-        save_state(state)
+        push_history(state, primary, secondary)
+
+    save_state(state)
 
     compose_wallpaper(primary, secondary, output_file, config.get('fill_color', 'black'))
     apply_gnome_wallpaper(output_file)
@@ -240,9 +321,9 @@ def apply(config: dict, refresh: bool = False) -> None:
 
 def daemon_loop(config_path: Path) -> None:
     while True:
-        config = ensure_config() if config_path == CONFIG_PATH else json.loads(config_path.read_text(encoding='utf-8'))
+        config = ensure_config() if config_path == CONFIG_PATH else normalize_config(json.loads(config_path.read_text(encoding='utf-8')))
         apply(config)
-        time.sleep(max(5, int(config.get('interval_seconds', 1200))))
+        time.sleep(max(60, int(config.get('interval_minutes', 20)) * 60))
 
 
 def main() -> int:
@@ -250,17 +331,19 @@ def main() -> int:
     parser.add_argument('--config', default=str(CONFIG_PATH))
     parser.add_argument('--apply', action='store_true')
     parser.add_argument('--refresh', action='store_true')
+    parser.add_argument('--previous', action='store_true')
+    parser.add_argument('--next', dest='next_history', action='store_true')
     parser.add_argument('--daemon', action='store_true')
     args = parser.parse_args()
 
     config_path = Path(args.config).expanduser()
-    config = ensure_config() if config_path == CONFIG_PATH else json.loads(config_path.read_text(encoding='utf-8'))
+    config = ensure_config() if config_path == CONFIG_PATH else normalize_config(json.loads(config_path.read_text(encoding='utf-8')))
 
     if args.daemon:
         daemon_loop(config_path)
         return 0
 
-    apply(config, refresh=args.refresh)
+    apply(config, refresh=args.refresh, previous=args.previous, next_history=args.next_history)
     return 0
 
 

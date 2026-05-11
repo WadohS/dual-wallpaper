@@ -11,10 +11,13 @@ SYSTEMD_USER_DIR="$HOME/.config/systemd/user"
 mkdir -p "$TARGET_DIR" "$BIN_DIR" "$CONFIG_DIR" "$SYSTEMD_USER_DIR"
 cp "$ROOT_DIR/dual_wallpaper.py" "$TARGET_DIR/dual_wallpaper.py"
 cp "$ROOT_DIR/dual_wallpaper_prefs.py" "$TARGET_DIR/dual_wallpaper_prefs.py"
+cp "$ROOT_DIR/dual_wallpaper_indicator.py" "$TARGET_DIR/dual_wallpaper_indicator.py"
 chmod +x "$TARGET_DIR/dual_wallpaper.py"
 chmod +x "$TARGET_DIR/dual_wallpaper_prefs.py"
+chmod +x "$TARGET_DIR/dual_wallpaper_indicator.py"
 ln -sf "$TARGET_DIR/dual_wallpaper.py" "$BIN_DIR/dual-wallpaper"
 ln -sf "$TARGET_DIR/dual_wallpaper_prefs.py" "$BIN_DIR/dual-wallpaper-prefs"
+ln -sf "$TARGET_DIR/dual_wallpaper_indicator.py" "$BIN_DIR/dual-wallpaper-indicator"
 
 cat > "$SYSTEMD_USER_DIR/dual-wallpaper.service" <<'EOF'
 [Unit]
@@ -56,6 +59,19 @@ Exec=/bin/bash -lc 'systemctl --user restart dual-wallpaper.service'
 [Desktop Action EditConfig]
 Name=Edit config JSON
 Exec=/bin/bash -lc 'gio open %h/.config/dual-wallpaper/config.json'
+EOF
+
+mkdir -p "$HOME/.config/autostart"
+cat > "$HOME/.config/autostart/dual-wallpaper-indicator.desktop" <<'EOF'
+[Desktop Entry]
+Name=Dual Wallpaper Indicator
+Comment=Top bar menu for Dual Wallpaper
+Exec=%h/.local/share/dual-wallpaper/dual_wallpaper_indicator.py
+Icon=preferences-desktop-wallpaper
+Terminal=false
+Type=Application
+Categories=Utility;GNOME;
+X-GNOME-Autostart-Delay=10
 EOF
 
 printf 'Installed Dual Wallpaper in %s\n' "$TARGET_DIR"

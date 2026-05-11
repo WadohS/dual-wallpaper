@@ -23,7 +23,7 @@ DEFAULT_CONFIG = {
     'secondary_folder': str(HOME / 'Téléchargements' / 'ColorWall'),
     'different_images': True,
     'recursive': False,
-    'interval_seconds': 1200,
+    'interval_minutes': 20,
     'output_file': str(HOME / '.local' / 'share' / 'dual-wallpaper' / 'wallpaper-composite.jpg'),
     'fill_color': 'black',
 }
@@ -35,7 +35,12 @@ def ensure_config() -> dict:
         CONFIG_PATH.write_text(json.dumps(DEFAULT_CONFIG, indent=2), encoding='utf-8')
         return DEFAULT_CONFIG.copy()
 
-    return json.loads(CONFIG_PATH.read_text(encoding='utf-8'))
+    config = json.loads(CONFIG_PATH.read_text(encoding='utf-8'))
+    if 'interval_minutes' not in config:
+        seconds = int(config.pop('interval_seconds', 1200))
+        config['interval_minutes'] = max(1, seconds // 60)
+        CONFIG_PATH.write_text(json.dumps(config, indent=2), encoding='utf-8')
+    return config
 
 
 class DualWallpaperPrefs(Gtk.Application):
@@ -89,12 +94,18 @@ class DualWallpaperPrefs(Gtk.Application):
         self.secondary_label = Gtk.Label(label='Dossier ecran 2', halign=Gtk.Align.START)
         self.output_label = Gtk.Label(label='Fichier de sortie', halign=Gtk.Align.START)
 
+        primary_button = Gtk.Button(label='Choisir...')
+        primary_button.connect('clicked', self._choose_folder, self.primary_entry)
         grid.attach(self.primary_label, 0, row, 1, 1)
-        grid.attach(self.primary_entry, 1, row, 2, 1)
+        grid.attach(self.primary_entry, 1, row, 1, 1)
+        grid.attach(primary_button, 2, row, 1, 1)
         row += 1
 
+        secondary_button = Gtk.Button(label='Choisir...')
+        secondary_button.connect('clicked', self._choose_folder, self.secondary_entry)
         grid.attach(self.secondary_label, 0, row, 1, 1)
-        grid.attach(self.secondary_entry, 1, row, 2, 1)
+        grid.attach(self.secondary_entry, 1, row, 1, 1)
+        grid.attach(secondary_button, 2, row, 1, 1)
         row += 1
 
         self.different_switch = Gtk.Switch(active=self._config.get('different_images', True))
@@ -107,9 +118,9 @@ class DualWallpaperPrefs(Gtk.Application):
         grid.attach(self.recursive_switch, 1, row, 1, 1)
         row += 1
 
-        self.interval_spin = Gtk.SpinButton.new_with_range(60, 86400, 60)
-        self.interval_spin.set_value(self._config.get('interval_seconds', 1200))
-        grid.attach(Gtk.Label(label='Intervalle (secondes)', halign=Gtk.Align.START), 0, row, 1, 1)
+        self.interval_spin = Gtk.SpinButton.new_with_range(1, 1440, 1)
+        self.interval_spin.set_value(self._config.get('interval_minutes', 20))
+        grid.attach(Gtk.Label(label='Intervalle (minutes)', halign=Gtk.Align.START), 0, row, 1, 1)
         grid.attach(self.interval_spin, 1, row, 1, 1)
         row += 1
 
@@ -126,12 +137,18 @@ class DualWallpaperPrefs(Gtk.Application):
         save_button.connect('clicked', self._save)
         apply_button = Gtk.Button(label='Appliquer maintenant')
         apply_button.connect('clicked', self._apply_now)
+        next_button = Gtk.Button(label='Suivant')
+        next_button.connect('clicked', self._next_wallpaper)
+        previous_button = Gtk.Button(label='Precedent')
+        previous_button.connect('clicked', self._previous_wallpaper)
         restart_button = Gtk.Button(label='Redemarrer le service')
         restart_button.connect('clicked', self._restart_service)
         open_button = Gtk.Button(label='Ouvrir le JSON')
         open_button.connect('clicked', self._open_config)
         button_box.append(save_button)
         button_box.append(apply_button)
+        button_box.append(previous_button)
+        button_box.append(next_button)
         button_box.append(restart_button)
         button_box.append(open_button)
         grid.attach(button_box, 0, row, 3, 1)
@@ -152,6 +169,24 @@ class DualWallpaperPrefs(Gtk.Application):
         self.secondary_label.set_visible(split)
         self.secondary_entry.set_visible(split)
 
+    def _choose_folder(self, _button: Gtk.Button, entry: Gtk.Entry) -> None:
+        dialog = Gtk.FileChooserNative(
+            title='Choisir un dossier',
+            transient_for=self.props.active_window,
+            action=Gtk.FileChooserAction.SELECT_FOLDER,
+            accept_label='Choisir',
+            cancel_label='Annuler',
+        )
+        dialog.connect('response', self._on_choose_folder_response, entry)
+        dialog.show()
+
+    def _on_choose_folder_response(self, dialog: Gtk.FileChooserNative, response: int, entry: Gtk.Entry) -> None:
+        if response == Gtk.ResponseType.ACCEPT:
+            file = dialog.get_file()
+            if file and file.get_path():
+                entry.set_text(file.get_path())
+        dialog.destroy()
+
     def _collect(self) -> dict:
         return {
             'mode': self.mode_combo.get_active_id() or 'shared',
@@ -159,7 +194,7 @@ class DualWallpaperPrefs(Gtk.Application):
             'secondary_folder': self.secondary_entry.get_text() or self.primary_entry.get_text(),
             'different_images': self.different_switch.get_active(),
             'recursive': self.recursive_switch.get_active(),
-            'interval_seconds': self.interval_spin.get_value_as_int(),
+            'interval_minutes': self.interval_spin.get_value_as_int(),
             'output_file': self.output_entry.get_text(),
             'fill_color': self.fill_combo.get_active_id() or 'black',
         }
@@ -180,6 +215,16 @@ class DualWallpaperPrefs(Gtk.Application):
         self._save()
         ok, msg = self._run([str(HOME / '.local' / 'share' / 'dual-wallpaper' / 'dual_wallpaper.py'), '--apply'])
         self.status.set_text('Fond applique.' if ok else f'Erreur: {msg}')
+
+    def _next_wallpaper(self, *_args) -> None:
+        self._save()
+        ok, msg = self._run([str(HOME / '.local' / 'share' / 'dual-wallpaper' / 'dual_wallpaper.py'), '--apply'])
+        self.status.set_text('Couple suivant applique.' if ok else f'Erreur: {msg}')
+
+    def _previous_wallpaper(self, *_args) -> None:
+        self._save()
+        ok, msg = self._run([str(HOME / '.local' / 'share' / 'dual-wallpaper' / 'dual_wallpaper.py'), '--previous'])
+        self.status.set_text('Couple precedent applique.' if ok else f'Erreur: {msg}')
 
     def _restart_service(self, *_args) -> None:
         self._save()

@@ -36,8 +36,26 @@ Key settings:
 - `primary_folder`
 - `secondary_folder`
 - `different_images`
-- `interval_seconds`
+- `interval_minutes`
 - `recursive`
+
+The preferences UI also provides:
+
+- folder picker buttons
+- `Apply now`
+- `Previous`
+- `Next`
+- `Restart service`
+
+## Top Bar Menu
+
+`Dual Wallpaper` also installs a tray/appindicator menu in the top bar with:
+
+- `Next`
+- `Previous`
+- `Refresh Current Pair`
+- `Settings`
+- `Restart Service`
 
 ## Installation
 
