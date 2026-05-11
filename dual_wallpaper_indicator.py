@@ -15,7 +15,6 @@ from gi.repository import AyatanaAppIndicator3, Gtk  # noqa: E402
 HOME = Path.home()
 APP_DIR = HOME / '.local' / 'share' / 'dual-wallpaper'
 CLI = str(APP_DIR / 'dual_wallpaper.py')
-PREFS = str(APP_DIR / 'dual_wallpaper_prefs.py')
 
 
 def run_command(command: list[str]) -> None:
@@ -39,7 +38,7 @@ def build_menu() -> Gtk.Menu:
     separator.show()
     menu.append(separator)
 
-    add_item('Settings', lambda *_args: run_command([PREFS]))
+    add_item('Settings', lambda *_args: run_command(['gnome-extensions', 'prefs', 'dual-clock@wadohs']))
     add_item('Restart Service', lambda *_args: run_command(['systemctl', '--user', 'restart', 'dual-wallpaper.service']))
 
     separator2 = Gtk.SeparatorMenuItem()
