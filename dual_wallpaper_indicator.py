@@ -30,22 +30,22 @@ def build_menu() -> Gtk.Menu:
         item.show()
         menu.append(item)
 
-    add_item('Next', lambda *_args: run_command([CLI, '--apply']))
-    add_item('Previous', lambda *_args: run_command([CLI, '--previous']))
-    add_item('Refresh Current Pair', lambda *_args: run_command([CLI, '--refresh']))
+    add_item('Suivant', lambda *_args: run_command([CLI, '--apply']))
+    add_item('Precedent', lambda *_args: run_command([CLI, '--previous']))
+    add_item('Rafraichir la paire courante', lambda *_args: run_command([CLI, '--refresh']))
 
     separator = Gtk.SeparatorMenuItem()
     separator.show()
     menu.append(separator)
 
-    add_item('Settings', lambda *_args: run_command(['gnome-extensions', 'prefs', 'dual-clock@wadohs']))
-    add_item('Restart Service', lambda *_args: run_command(['systemctl', '--user', 'restart', 'dual-wallpaper.service']))
+    add_item('Reglages', lambda *_args: run_command(['gnome-extensions', 'prefs', 'dual-clock@wadohs']))
+    add_item('Redemarrer le service', lambda *_args: run_command(['systemctl', '--user', 'restart', 'dual-wallpaper.service']))
 
     separator2 = Gtk.SeparatorMenuItem()
     separator2.show()
     menu.append(separator2)
 
-    add_item('Quit Menu', lambda *_args: Gtk.main_quit())
+    add_item('Quitter le menu', lambda *_args: Gtk.main_quit())
 
     return menu
 
@@ -53,11 +53,11 @@ def build_menu() -> Gtk.Menu:
 def main() -> int:
     indicator = AyatanaAppIndicator3.Indicator.new(
         'dual-wallpaper-indicator',
-        'preferences-desktop-wallpaper',
+        'dual-desktop',
         AyatanaAppIndicator3.IndicatorCategory.APPLICATION_STATUS,
     )
     indicator.set_status(AyatanaAppIndicator3.IndicatorStatus.ACTIVE)
-    indicator.set_title('Dual Wallpaper')
+    indicator.set_title('Dual Desktop')
     indicator.set_menu(build_menu())
     Gtk.main()
     return 0
