@@ -41,7 +41,7 @@ cat > "$HOME/.local/share/applications/dual-wallpaper.desktop" <<'EOF'
 [Desktop Entry]
 Name=Dual Wallpaper
 Comment=Dual monitor wallpaper rotator
-Exec=%h/.local/share/dual-wallpaper/dual_wallpaper_prefs.py
+Exec=/home/wadohs/.local/share/dual-wallpaper/dual_wallpaper_prefs.py
 Icon=preferences-desktop-wallpaper
 Terminal=false
 Type=Application
@@ -50,7 +50,7 @@ Actions=Apply;Restart;EditConfig;
 
 [Desktop Action Apply]
 Name=Apply now
-Exec=/bin/bash -lc '%h/.local/share/dual-wallpaper/dual_wallpaper.py --apply'
+Exec=/bin/bash -lc '/home/wadohs/.local/share/dual-wallpaper/dual_wallpaper.py --apply'
 
 [Desktop Action Restart]
 Name=Restart service
@@ -58,7 +58,7 @@ Exec=/bin/bash -lc 'systemctl --user restart dual-wallpaper.service'
 
 [Desktop Action EditConfig]
 Name=Edit config JSON
-Exec=/bin/bash -lc 'gio open %h/.config/dual-wallpaper/config.json'
+Exec=/bin/bash -lc 'gio open /home/wadohs/.config/dual-wallpaper/config.json'
 EOF
 
 mkdir -p "$HOME/.config/autostart"
@@ -66,7 +66,7 @@ cat > "$HOME/.config/autostart/dual-wallpaper-indicator.desktop" <<'EOF'
 [Desktop Entry]
 Name=Dual Wallpaper Indicator
 Comment=Top bar menu for Dual Wallpaper
-Exec=%h/.local/share/dual-wallpaper/dual_wallpaper_indicator.py
+Exec=/home/wadohs/.local/share/dual-wallpaper/dual_wallpaper_indicator.py
 Icon=preferences-desktop-wallpaper
 Terminal=false
 Type=Application
