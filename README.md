@@ -39,26 +39,20 @@ Key settings:
 - `interval_minutes`
 - `recursive`
 
-The preferences UI also provides:
-
-- folder picker buttons
-- `Apply now`
-- `Previous`
-- `Next`
-- `Restart service`
+The settings are exposed through the shared `Dual Desktop` extension preferences and the top bar indicator.
 
 ## Top Bar Menu
 
-`Dual Wallpaper` also installs a tray/appindicator menu in the top bar with:
+`Dual Wallpaper` installs a tray/appindicator menu in the top bar with:
 
 - `Next`
 - `Previous`
 - `Refresh Current Pair`
-- `Settings`
-- `Restart Service`
+- `Reglages`
+- `Redemarrer le service`
 
 ## Installation
 
 Use `install.sh` to install the script and service locally.
 
-After installation, launch `Dual Wallpaper` from the applications menu to edit the configuration.
+After installation, open the shared settings from the `Dual Desktop` extension preferences or from the top bar indicator.
