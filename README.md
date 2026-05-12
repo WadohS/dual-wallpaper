@@ -53,6 +53,6 @@ The settings are exposed through the shared `Dual Desktop` extension preferences
 
 ## Installation
 
-Use `install.sh` to install the script and service locally.
+Use `install.sh` to install the script, service and top bar indicator locally.
 
 After installation, open the shared settings from the `Dual Desktop` extension preferences or from the top bar indicator.
