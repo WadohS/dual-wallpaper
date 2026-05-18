@@ -12,9 +12,11 @@ ICONS_DIR="$HOME/.local/share/icons/hicolor/scalable/apps"
 mkdir -p "$TARGET_DIR" "$BIN_DIR" "$CONFIG_DIR" "$SYSTEMD_USER_DIR" "$ICONS_DIR"
 cp "$ROOT_DIR/dual_wallpaper.py" "$TARGET_DIR/dual_wallpaper.py"
 cp "$ROOT_DIR/dual_wallpaper_indicator.py" "$TARGET_DIR/dual_wallpaper_indicator.py"
+cp "$ROOT_DIR/dual_wallpaper_indicator_launcher.sh" "$TARGET_DIR/dual_wallpaper_indicator_launcher.sh"
 cp "$ROOT_DIR/assets/dual-desktop.svg" "$ICONS_DIR/dual-desktop.svg"
 chmod +x "$TARGET_DIR/dual_wallpaper.py"
 chmod +x "$TARGET_DIR/dual_wallpaper_indicator.py"
+chmod +x "$TARGET_DIR/dual_wallpaper_indicator_launcher.sh"
 ln -sf "$TARGET_DIR/dual_wallpaper.py" "$BIN_DIR/dual-wallpaper"
 ln -sf "$TARGET_DIR/dual_wallpaper_indicator.py" "$BIN_DIR/dual-wallpaper-indicator"
 
@@ -40,7 +42,7 @@ cat > "$HOME/.config/autostart/dual-wallpaper-indicator.desktop" <<'EOF'
 [Desktop Entry]
 Name=Dual Wallpaper Indicator
 Comment=Top bar menu for Dual Wallpaper
-Exec=/home/wadohs/.local/share/dual-wallpaper/dual_wallpaper_indicator.py
+Exec=/home/wadohs/.local/share/dual-wallpaper/dual_wallpaper_indicator_launcher.sh
 Icon=dual-desktop
 Terminal=false
 Type=Application

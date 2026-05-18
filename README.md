@@ -51,6 +51,8 @@ The settings are exposed through the shared `Dual Desktop` extension preferences
 - `Reglages`
 - `Redemarrer le service`
 
+The indicator launcher clears Python-related environment variables before startup. This avoids conflicts with other desktop apps that export a custom `PYTHONHOME` or `PYTHONPATH` in the user session.
+
 ## Installation
 
 Use `install.sh` to install the script, service and top bar indicator locally.
